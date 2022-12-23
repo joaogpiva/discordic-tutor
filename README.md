@@ -1,3 +1,3 @@
 # untitled-scryfall-fetcher
 
-just a little CLI tool created for educational purposes
+discord bot written in python just for educational purposes
