@@ -1,7 +1,7 @@
-import requests
 import discord
 import os
 from dotenv import load_dotenv
+from functions import *
 
 load_dotenv()
 
@@ -20,16 +20,16 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+    if message.content.startswith('s!'):
+        name = message.content[3:]
+        try:
+            card = fuzzySearch(name)
+            await message.channel.send(printSimple(card))
+        except Exception as e:
+            await message.channel.send(e)
+
+    if message.content.startswith('r!'):
+        random = getRandomCard()
+        await message.channel.send(printSimple(random))
 
 client.run(TOKEN)
-
-'''
-random = requests.get("https://api.scryfall.com/cards/random").json()
-print("Nome: " + random["name"])
-print("Custo de Mana: " + random["mana_cost"])
-print("Texto: " + random["oracle_text"])
-if "flavor_text" in random:
-    print(random["flavor_text"])
-'''
