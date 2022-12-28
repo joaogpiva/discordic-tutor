@@ -23,11 +23,36 @@ def printSimple(card):
     
     return result
 
+def printDoubleFaced(card):
+    result = ""
+    faceCount = 1
+    for face in card["card_faces"]:
+        result += "Face " + str(faceCount) + ":\n\n"
+        result += face["name"] + " - " + face["mana_cost"] + "\n\n"
+        result += face["type_line"] + "\n\n"
+        result += face["oracle_text"] + "\n\n"
+        if "power" in face:
+            if face["power"] == "*":
+                result += "\\" + face["power"] + "/"
+            else:
+                result += face["power"] + "/"
+            if face["toughness"] == "*":
+                result += "\\" + face["toughness"] + "\n\n"
+            else:
+                result += face["toughness"] + "\n\n"
+        if "loyalty" in face:
+            result += "Starting loyalty: " + face["loyalty"] + "\n\n"
+        if "flavor_text" in face:
+            result += "_" + face["flavor_text"] + "_\n\n"
+        faceCount += 1
+
+    return result
+
 def getRandomCard():
     isToken = True
     while(isToken):
         card = requests.get(URL + "cards/random")
-        if (not card.json()["layout"] == "token") or (not card["layout"].json() == "double_faced_token"):
+        if (not card.json()["layout"] == "token") and (not card.json()["layout"] == "double_faced_token"):
             isToken = False
 
     return card.json()
@@ -35,9 +60,7 @@ def getRandomCard():
 def fuzzySearch(name):
     name = name.replace(" ", "+")
     # TODO: sanitizar direito a pesquisa
-    print(URL + "cards/named?fuzzy=" + name)
     card = requests.get(URL + "cards/named?fuzzy=" + name)
-    print(card.status_code)
     if card.status_code == 404:
         raise Exception("Card not found, check your spelling and try again.")
         return 
