@@ -1,3 +1,3 @@
-# untitled-scryfall-fetcher
+# Discordic Tutor
 
-discord bot written in python just for educational purposes
+A Discord bot written in Python just for educational purposes
