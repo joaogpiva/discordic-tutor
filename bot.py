@@ -62,6 +62,7 @@ async def on_message(message):
         if message.content[0] == "r":
             try:
                 card = getRandomCard()
+                layout = findLayout(card)
                 if hasImage:
                     urllib.request.urlretrieve(card["image_uris"]["normal"], "card.jpg")
             except Exception as e:
