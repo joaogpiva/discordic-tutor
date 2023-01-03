@@ -23,12 +23,20 @@ async def on_message(message):
 
     if message.content[1] == "!":
         prefixLength = 3
-        hasImage = False
+        hasImage = extended = prices = False
         card = None
         wrongSpelling = False
 
-        if message.content[3:].startswith('-i'):
+        if " -i" in message.content:
             hasImage = True
+            prefixLength += 3
+
+        if " -e" in message.content:
+            extended = True
+            prefixLength += 3
+
+        if " -p" in message.content:
+            prices = True
             prefixLength += 3
 
         if message.content[0] == "s":
@@ -36,13 +44,17 @@ async def on_message(message):
 
             try:
                 card = fuzzySearch(name)
-                if hasImage and "card_faces" in card:
-                    faceCount = 0
-                    for face in card["card_faces"]:
-                        urllib.request.urlretrieve(card["card_faces"][faceCount]["image_uris"]["normal"], "card" + str(faceCount) + ".jpg")
-                        faceCount += 1
-                elif hasImage:
-                    urllib.request.urlretrieve(card["image_uris"]["normal"], "card.jpg")
+                layout = findLayout(card)
+
+                if hasImage:
+                    if layout == 2:
+                        faceCount = 0
+                        for face in card["card_faces"]:
+                            urllib.request.urlretrieve(card["card_faces"][faceCount]["image_uris"]["normal"], "card" + str(faceCount) + ".jpg")
+                            faceCount += 1
+                    else:
+                        urllib.request.urlretrieve(card["image_uris"]["normal"], "card.jpg")
+                    
             except Exception as e:
                 await message.channel.send(e)
                 wrongSpelling = True
@@ -56,7 +68,21 @@ async def on_message(message):
                 await message.channel.send(e)
 
         if card:
-            if "card_faces" in card:
+
+            if layout == 0:
+                if hasImage:
+                    await message.channel.send(printSimple(card), file=discord.File("card.jpg"))
+                else:
+                    await message.channel.send(printSimple(card))
+            elif layout == 1:
+                faceCount = 0
+                for face in card["card_faces"]:
+                    if faceCount == len(card["card_faces"]) - 1 and hasImage:
+                        await message.channel.send("Face " + str(faceCount + 1) + ":\n\n" + printSimple(face), file=discord.File("card.jpg"))
+                    else:
+                        await message.channel.send("Face " + str(faceCount + 1) + ":\n\n" + printSimple(face))
+                    faceCount += 1
+            elif layout == 2:
                 faceCount = 0
                 for face in card["card_faces"]:
                     if hasImage:
@@ -64,11 +90,7 @@ async def on_message(message):
                     else:
                         await message.channel.send("Face " + str(faceCount + 1) + ":\n\n" + printSimple(face))
                     faceCount += 1
-            elif hasImage:
-                await message.channel.send(printSimple(card), file=discord.File("card.jpg"))
-                os.remove("card.jpg")
-            else:
-                await message.channel.send(printSimple(card))
+
         elif not card and not wrongSpelling:
             await message.channel.send("Something didn't quite work... Please try again or, if the error persists, report this on Github (https://github.com/joaogpiva/untitled-scryfall-fetcher) or send the dev a DM (Piva#1177).")
         

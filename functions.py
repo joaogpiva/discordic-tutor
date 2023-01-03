@@ -1,6 +1,6 @@
 import requests
 
-URL = "https://api.scryfall.com/"
+urlScryfall = "https://api.scryfall.com/"
 
 def printSimple(card):
     result = ""
@@ -51,18 +51,29 @@ def printDoubleFaced(card):
 def getRandomCard():
     isToken = True
     while(isToken):
-        card = requests.get(URL + "cards/random")
+        card = requests.get(urlScryfall + "cards/random")
         if (not card.json()["layout"] == "token") and (not card.json()["layout"] == "double_faced_token"):
             isToken = False
 
     return card.json()
 
 def fuzzySearch(name):
-    name = name.replace(" ", "+")
-    # TODO: sanitizar direito a pesquisa
-    card = requests.get(URL + "cards/named?fuzzy=" + name)
+    card = requests.get(urlScryfall + "cards/named?fuzzy=" + name)
     if card.status_code == 404:
         raise Exception("Card not found, check your spelling and try again.")
         return 
 
     return card.json()
+
+def findLayout(card):
+    l = card["layout"]
+
+    if l == "split" or l == "flip" or l == "adventure":
+        # double faced but single image
+        return 1
+    elif l == "transform" or l == "modal_dfc":
+        # double faced and double image
+        return 2
+    else:
+        # single face and single image
+        return 0
