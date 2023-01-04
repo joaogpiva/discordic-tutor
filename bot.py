@@ -42,6 +42,10 @@ async def on_message(message):
         if message.content[0] == "s":
             name = message.content[prefixLength:]
 
+            if name == "":
+                await message.channel.send("Please provide a card name.")
+                return
+
             try:
                 card = fuzzySearch(name)
                 layout = findLayout(card)
@@ -54,7 +58,6 @@ async def on_message(message):
                             faceCount += 1
                     else:
                         urllib.request.urlretrieve(card["image_uris"]["normal"], "card.jpg")
-                    
             except Exception as e:
                 await message.channel.send(e)
                 wrongSpelling = True
@@ -68,8 +71,7 @@ async def on_message(message):
             except Exception as e:
                 await message.channel.send(e)
 
-        if card:
-
+        if card["object"] == "card":
             if layout == 0:
                 if hasImage:
                     await message.channel.send(printSimple(card), file=discord.File("card.jpg"))
@@ -91,9 +93,8 @@ async def on_message(message):
                     else:
                         await message.channel.send("Face " + str(faceCount + 1) + ":\n\n" + printSimple(face))
                     faceCount += 1
-
-        elif not card and not wrongSpelling:
-            await message.channel.send("Something didn't quite work... Please try again or, if the error persists, report this on Github (https://github.com/joaogpiva/untitled-scryfall-fetcher) or send the dev a DM (Piva#1177).")
+        elif card["object"] == "error" and not wrongSpelling:
+            await message.channel.send("Something didn't quite work... Please try again or, if the error persists, report this on Github (https://github.com/joaogpiva/discordic-tutor) or send the dev a DM (Piva#1177).")
         
         for filename in os.listdir("./"):
             if filename.endswith("jpg"):
